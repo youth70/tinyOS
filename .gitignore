@@ -1,0 +1,31 @@
+# ===== Keil MDK 编译产物 =====
+MDK-ARM/DebugConfig/
+MDK-ARM/Objects/
+MDK-ARM/Listings/
+MDK-ARM/RTE/
+MDK-ARM/*.uvguix.*
+*.o
+*.hex
+*.bin
+*.axf
+*.map
+*.crf
+*.d
+*.htm
+*.lst
+*.dep
+
+# ===== CubeMX 生成的编译目录 =====
+build/
+Debug/
+Release/
+
+# ===== 编辑器与系统文件 =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ===== 其他临时文件 =====
+*.log
+*.bak
