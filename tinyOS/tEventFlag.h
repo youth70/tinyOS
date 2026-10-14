@@ -17,13 +17,6 @@ typedef struct _tEventFlag
     uint32_t flags;                  // 32 位事件标志
 } tEventFlag;
 
-typedef struct _tEventFlagWaitInfo
-{
-    uint32_t mask;                   // 关心哪些位
-    uint32_t waitType;               // AND / OR
-    uint32_t clearType;              // 唤醒后清不清
-    uint32_t result;                 // 唤醒后满足的标志
-} tEventFlagWaitInfo;
 
 typedef struct _tEventFlagInfo
 {

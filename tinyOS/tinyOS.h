@@ -15,6 +15,7 @@
 #include "tTimer.h"
 #include "tMemBlock.h"
 #include "tQueue.h"  
+#include "tHook.h"
 
 
 typedef  enum _tTaskError						//Errors of tinyOS
@@ -36,8 +37,6 @@ typedef  enum _tTaskError						//Errors of tinyOS
 #define MEM8(addr)            *(volatile unsigned char *)addr
 #define MEM32(addr)           *(volatile unsigned long *)addr
 	
-#define MAX_IDLE   7979459UL
-
 
 extern tTask *currentTask;//一个指向当前正在运行任务的 TCB 的指针
 extern tTask *nextTask;//一个指向下一个要运行任务的 TCB 的指针
@@ -50,9 +49,10 @@ extern tList tTaskDelayedList;
 
 
 void tTaskRunFirst(void);//第一次启动任务
-void tTaskSched(void);	//选择下一个要运行的任务，然后请求切换		
+void tTaskSched(void);	//选择下一个要运行的任务，然后请求切换	
+void tTaskYield(void);
 void tTaskSwitch(void);	//软件触发 PendSV，请求任务切换
-void tTaskInit(tTask *task, void(*entry)(void *), void *param, uint32_t prio, tTaskStack *stack);
+void tTaskInit(tTask *task, void(*entry)(void *),void *param, uint32_t prio, tTaskStack *stack, uint32_t stackSize);
 void tSetSysTickPeriod(uint32_t ms);
 void SysTick_Handler (void);
 void tTaskDelay(uint32_t ms);
@@ -68,11 +68,6 @@ void tTaskSchedRdy(tTask *task);
 void tTaskSchedUnRdy(tTask *task);
 void tTimeTaskWait(tTask *task, uint32_t ms);
 void tTimeTaskWakeUp(tTask *task);
-__attribute__((noreturn)) void task1Entry(void *param);
-__attribute__((noreturn)) void task2Entry(void *param);
-__attribute__((noreturn)) void task3Entry(void *param);
-__attribute__((noreturn)) void idleTaskEntry(void *param);
-__attribute__((noreturn)) void task4Entry(void *param);
 void task1DestroyFunc(void *param);
 
 	

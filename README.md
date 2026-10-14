@@ -1,52 +1,36 @@
-\# tinyOS - 基于STM32F1xx的微型RTOS
+# tinyOS — 从零实现的 ARM Cortex-M3 实时操作系统内核
 
+一个手写的嵌入式 RTOS，涵盖任务调度、任务同步、任务通信、
+内存管理、软件定时器五大内核模块。
 
+## 特性
 
-\## 项目简介
+- 任务调度：优先级抢占 + 时间片轮转
+- 同步：信号量、互斥锁（优先级继承）、事件标志
+- 通信：邮箱、队列
+- 内存：固定大小内存块池
+- 定时：软件定时器（单次 / 周期）
+- 调试：栈溢出检测、Hook 机制
 
-本项目是一个从零编写的嵌入式实时操作系统（RTOS）内核，基于 STM32F103 微控制器。
+## 平台
 
+- STM32F103（Cortex-M3，72MHz）
+- Keil MDK-ARM V5.06
+- STM32CubeMX
 
+## 目录结构
 
-\## 功能特性
+- `Core/` — STM32CubeMX 生成的核代码
+- `Drivers/` — STM32 HAL 库
+- `MDK-ARM/` — Keil 工程
+- `tinyOS/` — RTOS 内核源码
 
-\* 优先级调度与时间片轮转
+## 快速开始
 
-\* 任务延时与阻塞机制
+1. Keil µVision 5 打开 `MDK-ARM/rtos_test.uvprojx`
+2. 编译、烧录到 STM32F103
+3. 串口（115200）观察输出
 
-\* 信号量 (Semaphore)
+## License
 
-\* 互斥锁 (Mutex) 与优先级继承
-
-\* 邮箱 (Mbox) 与消息队列 (Queue)
-
-\* 事件标志组 (Event Flag)
-
-\* 内存块管理 (MemBlock)
-
-\* 软件定时器 (Timer)
-
-
-
-\## 开发环境
-
-\* 硬件平台：STM32F103
-
-\* 图形配置：STM32CubeMX
-
-\* IDE：Keil MDK v5
-
-\* 编译器：ARMCC
-
-
-
-\## 如何编译与运行
-
-1\. 使用 STM32CubeMX 打开 `rtos\_test.ioc` 可查看外设配置。
-
-2\. 使用 Keil MDK 打开 `MDK-ARM/rtos\_test.uvprojx`。
-
-3\. 编译并烧录到 STM32F103 开发板。
-
-4\. 串口连接 USART1 (波特率 115200)，可查看任务调度与消息打印。
-
+MIT

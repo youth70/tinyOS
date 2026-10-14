@@ -12,7 +12,8 @@ void tEventWait(tEventControlBlock *ECB, tTask *task,
     uint32_t status = tTaskEnterCritical();              // 1. 进入临界区
 
     task->waitEvent = ECB;                                // 2. 记录在等哪个事件
-    task->eventMsg = msg;                                 // 3. 保存消息
+    if (msg != (void *)0)                                 // 3. 只有非空才覆盖 eventMsg
+        task->eventMsg = msg;                             //    （保护队列接收缓冲区地址不被冲掉）
     task->state |= state;                                 // 4. 设置等待状态
     task->waitEventResult=tErrorNoError;                 // 5. 结果：无错误
 
@@ -39,7 +40,8 @@ tTask * tEventWakeUp(tEventControlBlock *ECB, void *msg, uint32_t result)
         task = tNodeParent(node, tTask, linkNode);          // 4. 反推 TCB
 
         task->waitEvent = (tEventControlBlock *)0;          // 5. 清等待事件
-        task->eventMsg = msg;                               // 6. 设消息
+        if (msg != (void *)0)                               // 6. 只有非空才覆盖 eventMsg
+            task->eventMsg = msg;                           //    （保护队列接收缓冲区地址不被冲掉）
         task->state &= ~TINYOS_TASK_WAIT_MASK;              // 7. 清等待状态
         task->waitEventResult = result;                     // 8. 设结果
 

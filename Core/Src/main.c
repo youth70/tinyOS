@@ -90,7 +90,6 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-	DWT_Init();
 	tAppInit();
 	Rtos_start();
   /* USER CODE END 2 */

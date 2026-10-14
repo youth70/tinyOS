@@ -5,64 +5,79 @@
 #include "tLib.h"
 
 
-#define TINYOS_TASK_STATUS_RDY            0U
-#define TINYOS_TASK_STATUS_DESTROYED      (1U<<1)
-#define TINYOS_TASK_STATUS_DELAYED        (1U<<2)
-#define TINYOS_TASK_STATUS_SUSPENDED      (1U<<3) 
-#define TINYOS_TASK_WAIT_MASK							(0xFFU<<16)	//Task is suspended 
+#define TINYOS_TASK_STATUS_RDY            0U                    // 就绪状态
+#define TINYOS_TASK_STATUS_DESTROYED      (1U<<1)               // 已销毁
+#define TINYOS_TASK_STATUS_DELAYED        (1U<<2)               // 延时中
+#define TINYOS_TASK_STATUS_SUSPENDED      (1U<<3)               // 已挂起
+#define TINYOS_TASK_WAIT_MASK             (0xFFU<<16)           // 等待状态的掩码位
 
-struct _tEventControlBlock;									//Forward declaration of ECB
-struct _tEventFlagWaitInfo;
+// 栈底哨兵值
+#define TINYOS_STACK_SENTINEL             0xDEADBEEFUL
 
-typedef uint32_t tTaskStack;								//Task stack data type
-typedef struct _tTask										//Task structure data type
+struct _tEventControlBlock;                                     // ECB 前向声明（避免循环包含）
+
+typedef struct _tEventFlagWaitInfo
 {
-	uint32_t *stack;										//Task stack pointer
-	tNode linkNode;								//Through this node, the task can be inserted to the taskTable
-	uint32_t delayTicks;						//Task delay counter
-	tNode delayNode;							//Through this node, the task can be inserted to the task delayed list 
-	uint32_t prio;								//Task priority
-	uint32_t state;								//Present some states of the task
-	uint32_t slice;								//Time slice counter
-	uint32_t suspendCount;						//Task suspended conunter
-	
-	void (*clean)(void *param);				//Callback function pointer
-	void *cleanParam;							//Callback function parameter
-	uint32_t requestDeleteFlag;					//The flag of requesting to delete task
-	
-	struct _tEventControlBlock *waitEvent;
-	void *eventMsg;
-	uint32_t waitEventResult;
-	
-	struct _tEventFlagWaitInfo *waitFlagInfo;
-	
+    uint32_t mask;                                              // 关心哪些标志位
+    uint32_t waitType;                                          // AND / OR 等待方式
+    uint32_t clearType;                                         // 唤醒后是否清除标志
+    uint32_t result;                                            // 唤醒后满足的标志位
+} tEventFlagWaitInfo;
+
+typedef uint32_t tTaskStack;                                    // 任务栈数据类型
+
+typedef struct _tTask                                           // 任务控制块 TCB
+{
+    uint32_t *stack;                                            // 任务栈顶指针（保存现场后指向栈顶）
+		uint32_t *stackBase;																				// 栈底
+    tNode linkNode;                                             // 就绪/等待链表节点
+    uint32_t delayTicks;                                        // 延时剩余 tick 数
+    tNode delayNode;                                            // 延时链表节点
+    uint32_t prio;                                              // 任务优先级（数值越小越高）
+    uint32_t state;                                             // 任务状态位（RDY/DELAYED/SUSPENDED...）
+    uint32_t slice;                                             // 剩余时间片
+    uint32_t suspendCount;                                      // 挂起嵌套计数
+
+    void (*clean)(void *param);                                 // 删除回调函数指针
+    void *cleanParam;                                           // 回调参数
+    uint32_t requestDeleteFlag;                                 // 请求删除标志
+
+    struct _tEventControlBlock *waitEvent;                      // 正在等待的事件控制块
+    void *eventMsg;                                             // 事件消息 / 队列接收缓冲区地址
+    uint32_t waitEventResult;                                   // 等待结果（成功 / 超时 / 被删）
+
+    tEventFlagWaitInfo waitFlagInfo;
+
 }tTask;
 
-typedef struct _tTaskInfo						//The structure of getting a task's information
+typedef struct _tTaskInfo                                        // 任务信息查询结构
 {
-	uint32_t delayTicks;						//Task delay counter
-	uint32_t prio;								//Task priority
-	uint32_t state;								//Present the delay state of the task
-	uint32_t slice;								//Time slice counter
-	uint32_t suspendCount;						//Task suspended conunter	
+    uint32_t delayTicks;                                         // 延时剩余 tick
+    uint32_t prio;                                               // 优先级
+    uint32_t state;                                              // 状态位
+    uint32_t slice;                                              // 剩余时间片
+    uint32_t suspendCount;                                       // 挂起计数
 }tTaskInfo;
 
-void tAppInit(void);												//Application initial function
-void Rtos_start(void);
-void tTaskSuspend(tTask *task);										//To suspend the task
-void tTaskWakeUp(tTask *task);										//To wake up the task
+void tAppInit(void);                                             // 应用初始化
+void Rtos_start(void);                                           // 启动 RTOS
+void tTaskSuspend(tTask *task);                                  // 挂起任务
+void tTaskWakeUp(tTask *task);                                   // 唤醒任务
 
-void tTaskSetCleanCallFunc(tTask *task, void (*clean)(void *param), 
-							void *param);							//Callback function
-void tTaskForceDelete(tTask *task);			//Force to delete the task
-void tTaskRequestDelete(tTask *task);		//Request to delete the task
-uint32_t tTaskIsRequestDeleted(void);		//Judge whether the task is requested to be deleted
+void tTaskSetCleanCallFunc(tTask *task, void (*clean)(void *param),
+                            void *param);                        // 设置删除回调
+void tTaskForceDelete(tTask *task);                              // 强制删除任务
+void tTaskRequestDelete(tTask *task);                            // 请求删除任务
+uint32_t tTaskIsRequestDeleted(void);                            // 查询是否被请求删除
 
-void tTimeTaskRemove(tTask *task);			//Remove the task from the tTaskDelayedList
-void tTaskSchedRemove(tTask *task);			//Remove the task from the taskTable and clear the corresponding taskPrioBitmap
-void tTaskDeleteSelf(void);				//Delete the task itself
+void tTimeTaskRemove(tTask *task);                               // 从延时链表移除
+void tTaskSchedRemove(tTask *task);                              // 从就绪表移除并清位图
+void tTaskDeleteSelf(void);                                      // 任务删除自己
 
-void tTaskGetInfo(tTask *task, tTaskInfo *taskinfo);		//Get a task's information
+void tTaskGetInfo(tTask *task, tTaskInfo *taskinfo);             // 查询任务信息
+
+uint32_t tTaskCheckStack(tTask *task);              // 返回 1=正常，0=溢出
+void tTaskStackOverflowHook(tTask *task);           // 溢出回调
 
 
 #endif

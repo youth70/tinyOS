@@ -1,31 +1,40 @@
-# ===== Keil MDK 编译产物 =====
-MDK-ARM/DebugConfig/
+# Keil 编译产物
+*.o
+*.d
+*.crf
+*.axf
+*.htm
+*.lnp
+*.map
+*.dep
+*.lst
+*.iex
+*.sct
+*.bak
+*.build_log.htm
+
+# Keil 目录
 MDK-ARM/Objects/
 MDK-ARM/Listings/
+MDK-ARM/DebugConfig/
 MDK-ARM/RTE/
-MDK-ARM/*.uvguix.*
-*.o
-*.hex
-*.bin
-*.axf
-*.map
-*.crf
-*.d
-*.htm
-*.lst
-*.dep
 
-# ===== CubeMX 生成的编译目录 =====
-build/
-Debug/
-Release/
+# Keil 个人配置
+*.uvoptx
+*.uvguix.*
 
-# ===== 编辑器与系统文件 =====
-.vscode/
-.idea/
+# CubeMX
+.mxproject
+
+# 系统文件
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# ===== 其他临时文件 =====
-*.log
-*.bak
+# 编辑器
+.vscode/
+.idea/
+*.swpMDK-ARM/EventRecorderStub.scvd
+MDK-ARM/rtos_test/
+*.hex
+*.scvd

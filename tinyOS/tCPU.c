@@ -1,7 +1,5 @@
 #include "tinyOS.h"
 
-extern volatile uint32_t g_idleCount;
-extern volatile uint32_t g_cpuUsage;
 
 void tSetSysTickPeriod(uint32_t ms)								//SysTick Timer initial function
 {
@@ -18,24 +16,10 @@ void SysTick_Handler(void)
     tNode *node;
     tTask *task;
     uint32_t status = tTaskEnterCritical();          // 1. 进入临界区
-	
-	
-	
+		
 	  static uint32_t tickCount = 0;
-    static uint32_t lastIdle = 0;
-
-    tickCount++;
-    if (tickCount >= 100)               // 1 秒
-    {
-        uint32_t idle = g_idleCount - lastIdle;   // 1 秒内增量
-        lastIdle = g_idleCount;
-        tickCount = 0;
-
-        g_cpuUsage = 100 - (idle * 100 / MAX_IDLE);
-    }
+    static uint32_t lastIdle = 0;		
 		
-		
-
     for (node = tTaskDelayedList.firstnode;          // 2. 遍历延时链表
          node != &(tTaskDelayedList.headNode);
          node = node->nextNode)
@@ -64,6 +48,10 @@ void SysTick_Handler(void)
     }
 
     tTaskExitCritical(status);                       // 10. 退出临界区
+		
+		if (tTickHook != (tHookFunc)0)
+        tTickHook();
+		
 		tTimerModuleTickNotify();
     tTaskSched();                                    // 11. 请求调度
 }
