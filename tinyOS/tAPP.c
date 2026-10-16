@@ -3,7 +3,6 @@
 #include "gpio.h"
 #include "usart.h"
 #include <stdio.h>
-#include "dwt.h"
 
 // ===== 内核全局变量 =====
 tTask *currentTask;
@@ -17,8 +16,6 @@ tList tTaskDelayedList;
 // ===== 空闲任务 =====
 static tTask tTaskIdle;
 static tTaskStack idleTaskEnv[TINYOS_IDLETASK_STACK_SIZE];
-volatile uint32_t g_idleCount = 0;
-volatile uint32_t g_cpuUsage  = 0;
 
 // ===== 测试任务 =====
 static tTask      LED_task;
